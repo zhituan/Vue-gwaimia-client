@@ -1,6 +1,7 @@
 /*
 vuex的mutations模块
  */
+import Vue from 'vue'
 import {
   RECEIVE_ADDRESS,
   RECEIVE_CATEGORYS,
@@ -9,7 +10,9 @@ import {
   RESET_USER_INFO,
   RECEIVE_SHOP_GOODS,
   RECEIVE_SHOP_RATINGS,
-  RECEIVE_SHOP_INFO
+  RECEIVE_SHOP_INFO,
+  INCREMENT_FOOD_COUNT,
+  DECREMENT_FOOD_COUNT
 } from './mutation-types'
 
 export default {
@@ -37,4 +40,24 @@ export default {
   [RECEIVE_SHOP_INFO](state,{info}){
     state.info = info
   },
+  //
+  [INCREMENT_FOOD_COUNT](state,{food}){
+    if(!food.count){//第一次增加，要在food中添加count属性
+      Vue.set(food,'count',1)
+      //第一次点击CartControl后，购物车中需要填入food。
+      state.cartFoods.push(food)
+    }else{
+      //对food进行操作，cartFoods中的food也会随之改变，二者指向同一引用
+      food.count++
+    }
+  },
+  [DECREMENT_FOOD_COUNT](state,{food}) {
+    if(food.count){
+      food.count--
+      if(food.count === 0){
+        //将购物车中的食物移出（底部购物车）
+        state.cartFoods.splice(state.cartFoods.indexOf(food),1)
+      }
+    }
+  }
 }

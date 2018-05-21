@@ -1,13 +1,28 @@
 <template>
   <div class="cartcontrol">
-    <div class="iconfont icon-remove_circle_outline"></div>
-    <div class="cart-count">1</div>
-    <div class="iconfont icon-add_circle"></div>
+    <transition name="move">
+      <div class="iconfont icon-remove_circle_outline" v-if="food.count" @click.stop="updateFoodCount(false)"></div>
+    </transition>
+    <div class="cart-count" v-if="food.count">{{food.count}}</div>
+    <div class="iconfont icon-add_circle" @click.stop="updateFoodCount(true)"></div>
   </div>
 </template>
 
 <script>
     export default {
+      //cart是在每个food的li中，需要count值，每次传给CartControl组件需要告知是哪个food增加了count
+      //因此直接将food对象传给cart组件，在food中增加count属性。注意food对象中一开始是没有count的
+      props:{
+        food:Object
+      },
+      //初始化显示时，－和count的值是不显示的，在点击+后二者再显示。
+      //当点击+后，food中要添加count属性。
+      //true时表示加，false时表示减  isAdd:是否添加
+      methods:{
+        updateFoodCount(isAdd) {
+          this.$store.dispatch('updateFoodCount',{isAdd , food:this.food})
+        }
+      }
 
     }
 </script>
@@ -29,6 +44,11 @@
       line-height 24px
       font-size 24px
       color $green
+      &.move-enter-active,&.move-leave-active
+        transition all 0.3s
+      &.move-enter , &.move-leave-to
+        opacity(0)
+        transform translateX(15px) rotate(360deg)
     .cart-count
       display: inline-block
       vertical-align: top

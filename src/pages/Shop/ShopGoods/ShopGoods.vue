@@ -12,13 +12,13 @@
           </li>
         </ul>
       </div>
-
       <div class="foods-wrapper" ref="foodsWrapper">
         <ul ref="foodsUl">
           <li class="food-list-hook" v-for="(good , index) in goods" :key="index">
             <h1 class="title">{{good.name}}</h1>
             <ul>
-              <li class="food-item bottom-border-1px" v-for="(food , index) in good.foods" :key="index">
+              <li class="food-item bottom-border-1px" v-for="(food , index) in good.foods"
+                  :key="index" @click="showFood(food)">
                 <div class="icon">
                   <img width="57" height="57" :src="food.icon">
                 </div>
@@ -33,7 +33,7 @@
                     <span class="old" v-if="food.oldPrice">￥{{food.oldPrice}}</span>
                   </div>
                   <div class="cartcontrol-wrapper">
-                    CartControl
+                    <CartControl :food="food"/>
                   </div>
                 </div>
               </li>
@@ -41,7 +41,9 @@
           </li>
         </ul>
       </div>
+      <ShopCart/>
     </div>
+    <Food :food="food" ref="food"/>
   </div>
 </template>
 
@@ -49,11 +51,14 @@
   import {mapState} from 'vuex'
   import BScroll from 'better-scroll'
   import CartControl from '../../../components/CartControl/CartControl'
+  import Food from '../../../components/Food/Food'
+  import ShopCart from '../../../components/ShopCart/ShopCart'
     export default {
       data() {
         return {
           tops:[],
-          scrollY:0
+          scrollY:0,
+          food:{}//传给的Food组件
         }
       },
     computed:{
@@ -118,10 +123,19 @@
           // 平滑滑动右侧列表
           this.foodsScroll.scrollTo(0,-scrollY,300)
 
+        },
+        //点击显示Food组件
+        showFood(food) {
+          //将state中的food赋值
+          this.food = food
+          // 显示food组件 (在父组件中调用子组件对象的方法)
+          this.$refs.food.toggleShow()
         }
       },
       components:{
-        CartControl
+        CartControl,
+        Food,
+        ShopCart
       }
 
     }
