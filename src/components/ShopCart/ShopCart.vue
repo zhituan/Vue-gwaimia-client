@@ -18,25 +18,29 @@
           </div>
         </div>
       </div>
-      <div class="shopcart-list" v-show="listShow">
-        <div class="list-header">
-          <h1 class="title">购物车</h1>
-          <span class="empty">清空</span>
+      <transition name="move">
+        <div class="shopcart-list" v-show="listShow">
+          <div class="list-header">
+            <h1 class="title">购物车</h1>
+            <span class="empty" @click="clearCart">清空</span>
+          </div>
+          <div class="list-content">
+            <ul>
+              <li class="food" v-for="(food ,index) in cartFoods" :key="index">
+                <span class="name">{{food.name}}</span>
+                <div class="price"><span>￥{{food.price}}</span></div>
+                <div class="cartcontrol-wrapper">
+                  <CartControl :food="food"/>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
-        <div class="list-content">
-          <ul>
-            <li class="food" v-for="(food ,index) in cartFoods" :key="index">
-              <span class="name">{{food.name}}</span>
-              <div class="price"><span>￥{{food.price}}</span></div>
-              <div class="cartcontrol-wrapper">
-                <CartControl :food="food"/>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
+      </transition>
     </div>
-    <div class="list-mask" v-show="listShow" @click="toggleShow"></div>
+    <transition name="mask">
+      <div class="list-mask" v-show="listShow" @click="toggleShow"></div>
+    </transition>
   </div>
 </template>
 
@@ -74,6 +78,20 @@
               this.isShow = false
               return false
             }
+            //注意：在列表显示并且页面渲染完的情况下创建better-scroll。
+            //问题：关闭打开列表多次，就会创建多个better-scroll对象，而且原生的点击事件在better-scroll中
+            //是被禁止的。多次创建scroll会随机派发对个click，因此在点击列表中的cartcontrol时，会触发多次，添加多个count
+            if(!this.scroll){
+              this.$nextTick(()=>{
+                this.scroll = new BScroll('.list-content',{
+                  click:true
+                })
+              })
+            }else{
+              //已经创建后，让滚动条更新一下，去读取列表的最新高度
+              //列表实时更新，scroll要实时监视，由于上面的单例问题，因此要刷新一下
+              this.scroll.refresh()
+            }
             return this.isShow
           }
         },
@@ -82,6 +100,9 @@
           if(this.totalCount>0){
             this.isShow = !this.isShow
           }
+        },
+        clearCart() {
+          this.$store.dispatch('clearCart')
         }
       },
       components:{
@@ -200,9 +221,9 @@
       z-index -1
       width 100%
       transform translateY(-100%)
-      &.swipe-enter-active, &.swipe-leave-active
+      &.move-enter-active, &.move-leave-active
         transition transform .3s
-      &.swipe-enter, &.swipe-leave-to
+      &.move-enter, &.move-leave-to
         transform translateY(0)
       .list-header
         height 40px
@@ -256,9 +277,9 @@
     backdrop-filter blur(10px)
     opacity 1
     background rgba(7, 17, 27, 0.6)
-    &.fade-enter-active, &.fade-leave-active
+    &.mask-enter-active, &.mask-leave-active
       transition all 0.5s
-    &.fade-enter, &.fade-leave-to
+    &.mask-enter, &.mask-leave-to
       opacity 0
       background rgba(7, 17, 27, 0)
 </style>

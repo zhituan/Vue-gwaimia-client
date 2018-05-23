@@ -151,6 +151,7 @@
     width: 100%
     background: #fff;
     overflow: hidden
+    margin-top 40px
     .menu-wrapper
       flex: 0 0 80px
       width: 80px
